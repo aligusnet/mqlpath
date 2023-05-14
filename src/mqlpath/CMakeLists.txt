@@ -16,7 +16,8 @@ add_executable(app
     error.cpp
     value.cpp
     ast_eval_test.cpp
-    parser_test.cpp)
+    parser_test.cpp
+    parse_eval_test.cpp)
 
 target_link_libraries(app Catch2::Catch2WithMain ReflexLibStatic)
 

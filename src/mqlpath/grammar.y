@@ -38,7 +38,12 @@ namespace mqlpath { class Lexer; }
 %token <std::string> STRING "string"
 %token <bool> BOOLEAN "boolean"
 %token <std::string> IDENTIFIER "identifier"
-%token NOTHING EVALPATH ID CONST DEFAULT LAMBDA DROP KEEP OBJ ARR FIELD GET AT TRAVERSE
+%token NOTHING 
+%token EVALPATH 
+%token ID CONST DEFAULT LAMBDA DROP KEEP OBJ ARR FIELD GET TRAVERSE AT
+
+%left '*'
+%nonassoc AT TRAVERSE FIELD GET
 
 %nterm <Expression> exp
 %nterm <Value> value
@@ -88,19 +93,20 @@ fieldList: field       { $$ = std::vector<Object::Field>{std::move($1)}; }
                          $$ = std::move($1); }
 ;
 
-path: '(' path ')'       { $$ = std::move($2); }
- | ID                    { $$ = Path::make<IdPath>(); }
- | CONST exp             { $$ = Path::make<ConstPath>(std::move($2)); }
- | DEFAULT exp           { $$ = Path::make<DefaultPath>(std::move($2)); }
- | LAMBDA exp            { $$ = Path::make<LambdaPath>(std::move($2)); }
- | DROP stringList       { $$ = Path::make<DropPath>(std::move($2)); }
- | KEEP stringList       { $$ = Path::make<KeepPath>(std::move($2)); }
- | OBJ                   { $$ = Path::make<ObjPath>(); }
- | ARR                   { $$ = Path::make<ArrPath>(); }
- | FIELD fieldName path  { $$ = Path::make<FieldPath>(std::move($2), std::move($3)); }
- | GET fieldName path    { $$ = Path::make<GetPath>(std::move($2), std::move($3)); }
- | AT INTEGER path       { $$ = Path::make<AtPath>(atoi($2.c_str()), std::move($3)); }
- | TRAVERSE path         { $$ = Path::make<TraversePath>(std::move($2)); }
+path: '(' path ')'          { $$ = std::move($2); }
+ | ID                       { $$ = Path::make<IdPath>(); }
+ | CONST exp                { $$ = Path::make<ConstPath>(std::move($2)); }
+ | DEFAULT exp              { $$ = Path::make<DefaultPath>(std::move($2)); }
+ | LAMBDA exp               { $$ = Path::make<LambdaPath>(std::move($2)); }
+ | DROP stringList          { $$ = Path::make<DropPath>(std::move($2)); }
+ | KEEP stringList          { $$ = Path::make<KeepPath>(std::move($2)); }
+ | OBJ                      { $$ = Path::make<ObjPath>(); }
+ | ARR                      { $$ = Path::make<ArrPath>(); }
+ | FIELD fieldName path     { $$ = Path::make<FieldPath>(std::move($2), std::move($3)); }
+ | GET fieldName path       { $$ = Path::make<GetPath>(std::move($2), std::move($3)); }
+ | AT INTEGER path %prec AT { $$ = Path::make<AtPath>(atoi($2.c_str()), std::move($3)); }
+ | TRAVERSE path            { $$ = Path::make<TraversePath>(std::move($2)); }
+ | path '*' path            { $$ = Path::make<CompositionPath>(std::move($1), std::move($3)); }
 ;
 
 stringList: STRING       { $$ = std::vector<std::string>{std::move($1)}; }
