@@ -147,7 +147,7 @@ TestCase parseTestCase(std::string testCase) {
     reflex::StdMatcher matcher(pattern, testCase);
     REQUIRE(matcher.matches());
     return {std::string(matcher[1].first, matcher[1].second),
-            std::string(matcher[1].first, matcher[1].second)};
+            std::string(matcher[2].first, matcher[2].second)};
 }
 
 };  // namespace
